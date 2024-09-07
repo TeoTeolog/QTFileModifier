@@ -1,0 +1,20 @@
+# ninja log v6
+1182	5401	7474407906672701	CMakeFiles/FileModifier.dir/FileModifier_autogen/mocs_compilation.cpp.obj	200aefe14326354f
+66	1339	7474409645406410	FileModifier_autogen/timestamp	5d09b23126aad0c8
+1411	5634	7474323902671122	CMakeFiles/FileModifier.dir/mainwindow.cpp.obj	f4a829052c54b347
+66	1339	7474409645406410	FileModifier_autogen/mocs_compilation.cpp	5d09b23126aad0c8
+66	1339	7474409645406410	C:/Users/petrf/Documents/FileModifier/build/Desktop_Qt_6_7_2_MinGW_64_bit-Debug/FileModifier_autogen/timestamp	5d09b23126aad0c8
+66	1339	7474409645406410	C:/Users/petrf/Documents/FileModifier/build/Desktop_Qt_6_7_2_MinGW_64_bit-Debug/FileModifier_autogen/mocs_compilation.cpp	5d09b23126aad0c8
+291	5729	7474408430370482	CMakeFiles/FileModifier.dir/main.cpp.obj	33f2ea7fbf697122
+12980	15630	7474409774555154	FileModifier.exe	ca799d8bba7d566c
+42	165	7474057269089254	CMakeFiles/clean.additional	baedbe210acaa455
+166	198	7474057270367076	clean	577b940aee94fbd7
+1341	9887	7474409658127558	CMakeFiles/FileModifier.dir/consolewindow.cpp.obj	3dde7bddccdf32a4
+1348	12980	7474409658224068	CMakeFiles/FileModifier.dir/core.cpp.obj	f2d5e3de1a1bdcca
+51	279	7474410270472384	FileModifier_autogen/timestamp	5d09b23126aad0c8
+51	279	7474410270472384	FileModifier_autogen/mocs_compilation.cpp	5d09b23126aad0c8
+51	279	7474410270472384	C:/Users/petrf/Documents/FileModifier/build/Desktop_Qt_6_7_2_MinGW_64_bit-Debug/FileModifier_autogen/timestamp	5d09b23126aad0c8
+51	279	7474410270472384	C:/Users/petrf/Documents/FileModifier/build/Desktop_Qt_6_7_2_MinGW_64_bit-Debug/FileModifier_autogen/mocs_compilation.cpp	5d09b23126aad0c8
+281	4725	7474410272781107	CMakeFiles/FileModifier.dir/consolewindow.cpp.obj	3dde7bddccdf32a4
+289	7154	7474410272822277	CMakeFiles/FileModifier.dir/core.cpp.obj	f2d5e3de1a1bdcca
+7155	9598	7474410341519816	FileModifier.exe	ca799d8bba7d566c
