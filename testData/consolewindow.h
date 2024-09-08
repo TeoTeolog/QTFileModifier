@@ -15,7 +15,6 @@
 #include <QIntValidator>
 #include <QFileDialog>
 #include <QOverload>
-#include <QTimer>
 #include "core.h"
 
 namespace Ui {
@@ -35,13 +34,9 @@ private slots:
     void writeToConsole();
     void repeatRadioButtonChange();
     void onDestDirIndexChanged();
-    void ProcessFiles();
-
 private:
     Core coreLogic;
-
     Ui::Form *ui;
-
     QTextEdit* console;
     QPushButton* startButton;  
     QWidget *horizontalLayoutWidget;
@@ -73,8 +68,6 @@ private:
     QLabel *modifierValueLabel;
     QLineEdit *modifierValueLineEdit;
     QPushButton *pushButton;
-
-    QTimer *timer;
 };
 
 #endif // CONSOLEWINDOW_H

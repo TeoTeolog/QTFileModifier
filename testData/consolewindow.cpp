@@ -48,9 +48,6 @@ ConsoleWindow::ConsoleWindow(QWidget *parent) : QWidget(parent), ui(new Ui::Form
     }
 
     {
-        timer = new QTimer(this);
-        connect(timer, &QTimer::timeout, this, &ConsoleWindow::ProcessFiles);
-
         repeatTimerTimeEdit = ui->repeatTimerTimeEdit;
         repeatTimerTimeEdit->setDisabled(true);
     }
@@ -69,7 +66,6 @@ ConsoleWindow::ConsoleWindow(QWidget *parent) : QWidget(parent), ui(new Ui::Form
         QIntValidator *validator = new QIntValidator(INT_MIN, INT_MAX, this);
         modifierValueLineEdit->setValidator(validator);
     }
-
 }
 
 void ConsoleWindow::consoleLog(const std::string&& outString){
@@ -98,13 +94,19 @@ void ConsoleWindow::onDestDirIndexChanged() {
     }
 }
 
-void ConsoleWindow::ProcessFiles() {
+void ConsoleWindow::writeToConsole() {
     try{
+        coreLogic.handler->setDir(destDirComboBox->currentText().toStdString());
+        coreLogic.handler->setMaskString(maskLineEdit->text().toStdString());
+        coreLogic.handler->setDeleteFlag(deleteInCheckBox->isChecked());
+        coreLogic.handler->setActionOnExist(actionOnExistComboBox->currentIndex());
+
         coreLogic.handler->processFiles(
             [this](const std::string&& outString) {
                 consoleLog(std::move(outString));
             }
         );
+        // coreLogic.oldMainTest(destDirComboBox->currentText().toStdString(), maskLineEdit->text().toStdString());
     }
     catch(const std::exception& e)
     {
@@ -112,27 +114,5 @@ void ConsoleWindow::ProcessFiles() {
     }
     catch(...){
         consoleLog("Unpredictable error!\n");
-    }
-}
-
-void ConsoleWindow::writeToConsole() {
-
-    coreLogic.handler->setDir(destDirComboBox->currentText().toStdString());
-    coreLogic.handler->setMaskString(maskLineEdit->text().toStdString());
-    coreLogic.handler->setDeleteFlag(deleteInCheckBox->isChecked());
-    coreLogic.handler->setActionOnExist(actionOnExistComboBox->currentIndex());
-
-    if (repeatYesRadioButton->isChecked() || timer->isActive()){
-        if (timer->isActive()){
-            timer->stop();
-        }
-        else{
-            consoleLog("Timer seted: " + std::to_string(repeatTimerTimeEdit->time().msecsSinceStartOfDay()));
-            timer->setInterval(repeatTimerTimeEdit->time().msecsSinceStartOfDay());
-            timer->start();
-        }
-    }
-    else{
-        ProcessFiles();
     }
 }
