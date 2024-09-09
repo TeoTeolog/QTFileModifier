@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 #include <unordered_set>
+#include <unordered_map>
 #include <regex>
 #include <QTimer>
 
@@ -16,17 +17,20 @@ namespace fs = std::filesystem;
 bool isExistsFile (const std::string& name);
 bool isFileLocked(const std::string &filename);
 
+/* class for modify single file*/
 class FileHandler {
 private:
+    /* all modify function collected in one place */
     class ModifierFunctions {
     public:
-        static int8_t xor1 (int8_t val, int8_t modifier) { return val ^ modifier; };
-        static int8_t and1 (int8_t val, int8_t modifier) { return val & modifier; };
-        static int8_t or1 (int8_t val, int8_t modifier) { return val | modifier; };
+        static int8_t myXor (int8_t val, int8_t modifier) { return val ^ modifier; };
+        static int8_t myAnd (int8_t val, int8_t modifier) { return val & modifier; };
+        static int8_t myOr (int8_t val, int8_t modifier) { return val | modifier; };
         static int8_t shiftLeft(int8_t val, int8_t modifier) { return val << modifier; };
         static int8_t shiftRight(int8_t val, int8_t modifier) { return val >> modifier; };
     };
 
+    /* class to encapsulate modifying */
     class Modifier {
         int8_t modifier = 0;
         std::function<int8_t(int8_t, int8_t)> modify;
@@ -36,86 +40,96 @@ private:
         void setModifierFunc(std::function<int8_t(int8_t, int8_t)> modifierFunction) { modify = std::move(modifierFunction); }
         int8_t execute(int8_t val) { return modify(val, modifier); }
     };
-
+    
     std::ifstream file;
     std::ofstream oFile;
     Modifier modifier;
+
+    /* temp solution - save data in memory*/
     std::vector<int8_t> sequence;
 
 public:
-    explicit FileHandler(){};
+    FileHandler(){};
 
     void setModifier(int8_t val) { modifier.setModifierValue(val); }
 
-    void setXor() { modifier.setModifierFunc(ModifierFunctions:: xor1); }
-    void setAnd() { modifier.setModifierFunc(ModifierFunctions::and1); }
-    void setOr() { modifier.setModifierFunc(ModifierFunctions:: or1); }
+    void setXor() { modifier.setModifierFunc(ModifierFunctions::myXor); }
+    void setAnd() { modifier.setModifierFunc(ModifierFunctions::myAnd); }
+    void setOr() { modifier.setModifierFunc(ModifierFunctions::myOr); }
     void setShiftL() { modifier.setModifierFunc(ModifierFunctions::shiftLeft); }
     void setShiftR() { modifier.setModifierFunc(ModifierFunctions::shiftRight); }
 
-    void openFile(const std::string &fileName) {
-        if (!isExistsFile(fileName)) {
-            throw std::runtime_error("File \"" + fileName + "\" not exist!");
-        }
-        if (isFileLocked(fileName)) {
-            throw std::runtime_error("File \"" + fileName + "\" considered locked!");
-        }
-        file.open(fileName, std::ios::binary);
-        if (!file.is_open()) {
-            throw std::runtime_error("File \"" + fileName + "\" could not be open!");
-        }
-        sequence.clear();
-    }
+    /* modify opened file */
+    void processFile();
 
-    void processFile() {
-        int8_t num;
-        while (file.read(reinterpret_cast<char *>(&num), sizeof(num))) {
-            sequence.push_back(modifier.execute(num));
-        }
-        file.close();
-    }
-
-    void deleteFile(const std::string &fileName){
-        try {
-            if (!fs::remove(fileName)) {
-                throw std::runtime_error("File \"" + fileName + "\" could not be deleted!");
-            }
-        } catch (const fs::filesystem_error& e) {
-            throw std::runtime_error("Error deleting file: " + std::string(e.what()));
-        }
-    }
-
-    void outFile(const std::string &fileName) {
-        if (isExistsFile(fileName) && isFileLocked(fileName)) {
-            throw std::runtime_error("File \"" + fileName + "\" considered locked!");
-        }
-        oFile.open(fileName, std::ios::binary);
-        if (!oFile.is_open()) {
-            throw std::runtime_error("File \"" + fileName + "\" could not be open!");
-        }
-        for(auto& byte: sequence){
-            oFile << byte;
-        }
-        oFile.close();
-    }
+    void openFile(const std::string &fileName);
+    void deleteFile(const std::string &fileName);
+    void outFile(const std::string &fileName);
 };
 
 class FilesListHandler{
 private:
+    enum class actionCode {
+        AND,
+        XOR,
+        OR,
+        ShiftL,
+        ShiftR
+    };
+
     enum class ActionOnExist{
         replace,
         rename,
     };
-    ActionOnExist actionOnExist = ActionOnExist::replace;
-    FileHandler singleFileHandler;
+
+    std::unordered_map<std::string, actionCode>actions{
+        {"AND", actionCode::AND},
+        {"OR", actionCode::OR},
+        {"XOR", actionCode::XOR},
+        {"Побитовый сдвиг влево", actionCode::ShiftL},
+        {"Побитовый сдвиг вправо", actionCode::ShiftR}
+    };
+
+    std::unordered_map<std::string, ActionOnExist>actionsOnExist{
+        {"Заменить", ActionOnExist::replace},
+        {"Добавить с счетчиком", ActionOnExist::rename},
+    };
+
+    ActionOnExist actionOnExist;
     fs::path directoryPath;
     std::string maskString = "";
     bool needDelete = false;
 
+    FileHandler singleFileHandler;
+
+    /* get list of all files in dir[directoryPath] */
+    std::unordered_set<std::string> listAllFilesInDir();
+
+    /* convert mask in conditional myMask format to cpp regex*/
     std::string convertMaskToRegex(const std::string& mask);
+
+    /* check mask by regex */
     bool checkMask(std::string mask, std::string str);
+
+    // [TODO] think about path
+    /* return unique name for folder with given file [fileName - file name include path to file] */
     std::string getUniqueName(const std::string& fileName);
 public:
+    std::vector<std::string> getActionsNames(){
+        std::vector<std::string> result;
+        for(auto kv: actions){
+            result.push_back(kv.first);
+        }
+        return std::move(result);
+    }
+
+    std::vector<std::string> getActionsOnExistNames(){
+        std::vector<std::string> result;
+        for(auto kv: actionsOnExist){
+            result.push_back(kv.first);
+        }
+        return std::move(result);
+    }
 
     void setDir(const std::string &dirPath){
         directoryPath = dirPath;
@@ -129,42 +143,46 @@ public:
         needDelete = flag;
     }
 
-    void setActionOnExist(int val){
-        actionOnExist = static_cast<ActionOnExist>(val);
+    void setActionOnExist(const std::string& actionName){
+        actionOnExist = actionsOnExist[actionName];
     }
 
-    std::unordered_set<std::string> listAllFilesInDir();
+    void setModifier(const std::string& val){
+        singleFileHandler.setModifier(val != "" ? std::stoi(val) : 0);
+    }
 
-    void processFiles(std::function<void(const std::string&&)> logFunc){
-        singleFileHandler.setAnd();
-        singleFileHandler.setModifier(7);
-
-        for(auto & file: listAllFilesInDir()){
-            logFunc("Processing file: " + file + " started!");
-            singleFileHandler.openFile(directoryPath.string() + "/" + file);
-            singleFileHandler.processFile();
-            if(needDelete) singleFileHandler.deleteFile(directoryPath.string() + "/" + file);
-            switch(actionOnExist){
-                case ActionOnExist::replace:
-                    singleFileHandler.outFile(directoryPath.string() + "/" + file);
-                    break;
-                case ActionOnExist::rename:
-                    singleFileHandler.outFile(getUniqueName(directoryPath.string() + "/" + file));
-                    break;
-            }
-            logFunc("Processing file: " + file + " completed!");
+    void setModifyAction(const std::string& actionName){
+        switch(actions[actionName]){
+            case actionCode::AND:
+                singleFileHandler.setAnd();
+                break;
+            case actionCode::XOR:
+                singleFileHandler.setXor();
+                break;
+            case actionCode::OR:
+                singleFileHandler.setOr();
+                break;
+            case actionCode::ShiftL:
+                singleFileHandler.setShiftL();
+                break;
+            case actionCode::ShiftR:
+                singleFileHandler.setShiftR();
+                break;
         }
     }
+
+    /* execute files processing [logFunc - lambda function to log] */
+    void processFiles(std::function<void(const std::string&&)> logFunc);
 };
 
 class Core
 {
 public:
+    /* I assumed more logic will be here*/
     Core(){
         handler = new FilesListHandler;
     };
     FilesListHandler* handler;
-    int oldMainTest(std::string targetDirName, std::string mask);
 };
 
 #endif // CORE_H

@@ -1,6 +1,10 @@
 #include "ConsoleWindow.h"
 #include "./ui_consolewindow.h"
 
+/*
+ * I hope all code here is self-explaining
+*/
+
 ConsoleWindow::ConsoleWindow(QWidget *parent) : QWidget(parent), ui(new Ui::Form) {
     ui->setupUi(this);
     {
@@ -11,7 +15,7 @@ ConsoleWindow::ConsoleWindow(QWidget *parent) : QWidget(parent), ui(new Ui::Form
 
     {
         startButton = ui->pushButton;
-        connect(startButton, &QPushButton::clicked, this, &ConsoleWindow::writeToConsole);
+        connect(startButton, &QPushButton::clicked, this, &ConsoleWindow::startButtonPress);
     }
 
     {
@@ -34,8 +38,9 @@ ConsoleWindow::ConsoleWindow(QWidget *parent) : QWidget(parent), ui(new Ui::Form
 
     {
         actionOnExistComboBox = ui->actionOnExistComboBox;
-        actionOnExistComboBox->addItem("Заменить");
-        actionOnExistComboBox->addItem("Добавить с счетчиком");
+        for(auto itemName: coreLogic.handler->getActionsOnExistNames()){
+            actionOnExistComboBox->addItem(QString::fromStdString(itemName));
+        }
     }
 
     {
@@ -57,11 +62,9 @@ ConsoleWindow::ConsoleWindow(QWidget *parent) : QWidget(parent), ui(new Ui::Form
 
     {
         modifierOperatorComboBox = ui->modifierOperatorComboBox;
-        modifierOperatorComboBox->addItem("AND");
-        modifierOperatorComboBox->addItem("OR");
-        modifierOperatorComboBox->addItem("XOR");
-        modifierOperatorComboBox->addItem("Сместить влево");
-        modifierOperatorComboBox->addItem("Сместить вправо");
+        for(auto itemName: coreLogic.handler->getActionsNames()){
+            modifierOperatorComboBox->addItem(QString::fromStdString(itemName));
+        }
     }
 
     {
@@ -115,19 +118,23 @@ void ConsoleWindow::ProcessFiles() {
     }
 }
 
-void ConsoleWindow::writeToConsole() {
+void ConsoleWindow::startButtonPress() {
 
     coreLogic.handler->setDir(destDirComboBox->currentText().toStdString());
     coreLogic.handler->setMaskString(maskLineEdit->text().toStdString());
     coreLogic.handler->setDeleteFlag(deleteInCheckBox->isChecked());
-    coreLogic.handler->setActionOnExist(actionOnExistComboBox->currentIndex());
+    coreLogic.handler->setActionOnExist(actionOnExistComboBox->currentText().toStdString());
+    coreLogic.handler->setModifier(modifierValueLineEdit->text().toStdString());
+    coreLogic.handler->setModifyAction(modifierOperatorComboBox->currentText().toStdString());
 
     if (repeatYesRadioButton->isChecked() || timer->isActive()){
         if (timer->isActive()){
             timer->stop();
+            startButton->setText("Старт");
         }
         else{
             consoleLog("Timer seted: " + std::to_string(repeatTimerTimeEdit->time().msecsSinceStartOfDay()));
+            startButton->setText("Стоп");
             timer->setInterval(repeatTimerTimeEdit->time().msecsSinceStartOfDay());
             timer->start();
         }

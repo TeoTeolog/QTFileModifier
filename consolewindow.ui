@@ -27,7 +27,7 @@
     <rect>
      <x>0</x>
      <y>10</y>
-     <width>636</width>
+     <width>640</width>
      <height>521</height>
     </rect>
    </property>
@@ -179,7 +179,7 @@
              <time>
               <hour>0</hour>
               <minute>0</minute>
-              <second>15</second>
+              <second>1</second>
              </time>
             </property>
             <property name="currentSection">

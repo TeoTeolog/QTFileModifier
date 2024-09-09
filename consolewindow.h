@@ -32,7 +32,7 @@ public:
         coreLogic = core;
     }
 private slots:
-    void writeToConsole();
+    void startButtonPress();
     void repeatRadioButtonChange();
     void onDestDirIndexChanged();
     void ProcessFiles();

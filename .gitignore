@@ -90,3 +90,4 @@ CMakeUserPresets.json
 *_autogen*
 *.cache*
 .ninja_deps
+testData
